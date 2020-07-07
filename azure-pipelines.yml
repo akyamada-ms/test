@@ -24,6 +24,12 @@ variables:
   # Name of the new namespace being created to deploy the PR changes.
   k8sNamespaceForPR: 'review-app-$(System.PullRequest.PullRequestId)'
 
+  # ********** Version **********
+  major: 1
+  # define minor as a counter with the prefix as variable major, and seed as 100.
+  minor: $[counter(variables['major'], 100)]
+  BuildVersion: format('{0}.{1}', major, minor)
+
 stages:
 - stage: Build
   displayName: Build stage
