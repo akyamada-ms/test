@@ -42,8 +42,10 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: Bash@3
-      inputs: |
-        echo "PR Test"
+      inputs:
+        targetType: inline
+        script: |
+          echo $(BuildVersion)
       
 - stage: Build
   displayName: Build stage
