@@ -28,7 +28,7 @@ variables:
   major: 1
   # define minor as a counter with the prefix as variable major, and seed as 100.
   minor: $[counter(variables['major'], 100)]
-  BuildVersion: format('{0}.{1}', major, minor)
+  BuildVersion: format('{0}.{1}', $(major), $(minor))
 
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
