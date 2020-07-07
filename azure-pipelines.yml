@@ -33,6 +33,18 @@ variables:
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
+- stage: PRTest
+  displayName: PRTest
+  jobs:  
+  - job: PRTest
+    displayName: PRTest
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs: |
+        echo "PR Test"
+      
 - stage: Build
   displayName: Build stage
   jobs:  
