@@ -45,7 +45,7 @@ stages:
       inputs:
         targetType: inline
         script: |
-          echo $(BuildVersion)
+          echo $(major).$(minor)
       
 - stage: Build
   displayName: Build stage
