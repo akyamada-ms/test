@@ -30,8 +30,32 @@ variables:
   minor: $[counter(variables['major'], 100)]
   BuildVersion: format('{0}.{1}', major, minor)
 
+  isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
+
 stages:
 - stage: Build
+  displayName: Build stage
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          
+    - upload: manifests
+      artifact: manifests
+
+- stage: Build Release
+  condition: and(and(eq(isRelease, true), (succeeded(), eq(variables['Build.Reason'], 'PullRequest')))
   displayName: Build stage
   jobs:  
   - job: Build
