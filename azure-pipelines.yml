@@ -3,7 +3,6 @@ trigger:
 
 pr:
 - master
-- releases/*
 
 resources:
 - repo: self
@@ -33,11 +32,12 @@ variables:
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
-- stage: PRTest
-  displayName: PRTest
+- stage: CommitTrigger
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: CommitTrigger
   jobs:  
-  - job: PRTest
-    displayName: PRTest
+  - job: CommitTrigger
+    displayName: CommitTrigger
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -45,7 +45,22 @@ stages:
       inputs:
         targetType: inline
         script: |
-          echo $(major).$(minor)
+          echo "Commit trigger"
+
+- stage: PullRequestTrigger
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: PullRequestTrigger
+  jobs:  
+  - job: PullRequestTrigger
+    displayName: PullRequestTrigger
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Pull request trigger"
       
 - stage: Build
   displayName: Build stage
