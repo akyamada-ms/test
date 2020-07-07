@@ -34,7 +34,7 @@ variables:
 
 stages:
 - stage: CommitTrigger
-  condition: and(in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
   displayName: CommitTrigger
   jobs:  
   - job: CommitTrigger
@@ -49,7 +49,7 @@ stages:
           echo "Commit trigger"
 
 - stage: PullRequestTrigger
-  condition: and(eq(variables['Build.Reason'], 'PullRequest'))
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   displayName: PullRequestTrigger
   jobs:  
   - job: PullRequestTrigger
