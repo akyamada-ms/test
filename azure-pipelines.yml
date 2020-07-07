@@ -1,10 +1,9 @@
-# add comment retry
+# test
 trigger:
 - master
 
 pr:
 - master
-- releases/*
 
 resources:
 - repo: self
@@ -29,34 +28,42 @@ variables:
   major: 1
   # define minor as a counter with the prefix as variable major, and seed as 100.
   minor: $[counter(variables['major'], 100)]
-  BuildVersion: format('{0}.{1}', major, minor)
+  BuildVersion: format('{0}.{1}', $(major), $(minor))
 
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
-- stage: Build
-  displayName: Build stage
+- stage: CommitTrigger
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: CommitTrigger
   jobs:  
-  - job: Build
-    displayName: Build
+  - job: CommitTrigger
+    displayName: CommitTrigger
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
+    - task: Bash@3
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
-          
-    - upload: manifests
-      artifact: manifests
+        targetType: inline
+        script: |
+          echo "Commit trigger"
 
-- stage: Build Release
-  condition: and(eq(isRelease, true), eq(variables['Build.Reason'], 'PullRequest'))
+- stage: PullRequestTrigger
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: PullRequestTrigger
+  jobs:  
+  - job: PullRequestTrigger
+    displayName: PullRequestTrigger
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Pull request trigger"
+      
+- stage: Build
   displayName: Build stage
   jobs:  
   - job: Build
