@@ -55,7 +55,7 @@ stages:
       artifact: manifests
 
 - stage: Build Release
-  condition: and(and(eq(isRelease, true), (succeeded(), eq(variables['Build.Reason'], 'PullRequest')))
+  condition: and(eq(isRelease, true), eq(variables['Build.Reason'], 'PullRequest'))
   displayName: Build stage
   jobs:  
   - job: Build
