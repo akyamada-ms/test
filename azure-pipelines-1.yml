@@ -112,6 +112,7 @@ stages:
 
 
 # ********** Deploy ステージ **********
+# feature deployment
 - stage: FeatureDeploy
   displayName: Feature Deploy stage
   dependsOn: Build
