@@ -65,7 +65,7 @@ stages:
 
 # Pull Request をトリガーとする場合
 - stage: PullRequestTrigger
-  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'PullRequest'))
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'PullRequest'))
   displayName: PullRequestTrigger
   jobs:  
   - job: PullRequestTrigger
