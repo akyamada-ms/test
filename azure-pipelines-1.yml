@@ -6,10 +6,10 @@ trigger:
   branches:
     include:
     - master
+    - hotfix/*
     - release/*
     - develop/*
     - feature/*
-    - hotfix
   paths:
     exclude:
     - manifests/*
@@ -18,11 +18,11 @@ pr:
   branches:
     include:
       - master
-      - releases/*
-      - dev/*
+      - release/*
+      - develop/*
   paths:
     exlude:
-      -
+    - manifests/*
 
 resources:
 - repo: self
@@ -40,10 +40,13 @@ variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
   
-
 stages:
-- stage: Build
-  displayName: Build stage
+
+# ********** トリガー条件 : コミット **********
+# トリガー条件 : Feature ブランチに対するコミットが発生
+- stage: FeatureBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/feature/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Featre Build stage
   jobs:  
   - job: Build
     displayName: Build
@@ -63,8 +66,54 @@ stages:
     - upload: manifests
       artifact: manifests
 
-- stage: Deploy
-  displayName: Deploy stage
+# トリガー条件 : develop ブランチに対するコミットが発生
+- stage: DevelopBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/develop/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Develop Build stage
+  jobs:  
+
+# トリガー条件 : release ブランチに対するコミットが発生
+- stage: ReleaseBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/release/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Release Build stage
+  jobs:  
+
+# トリガー条件 : hotfix ブランチに対するコミットが発生
+- stage: HotfixBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/hotfix/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Hotfix Build stage
+  jobs:  
+
+# トリガー条件 : master ブランチに対するコミット
+- stage: MasterBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Master Build stage
+  jobs:  
+
+
+# ********** トリガー条件 : Pull Request **********
+# トリガー条件 : develop ブランチをターゲットとして Pull Request が発生
+- stage: DevelopBuild
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'develop'), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: Develop Build stage
+  jobs:  
+
+# トリガー条件 : release ブランチをターゲットとして Pull Request が発生
+- stage: ReleaseBuild
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'release'), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: Release Build stage
+  jobs:  
+
+# トリガー条件 : master ブランチをターゲットとして Pull Request が発生
+- stage: MasterBuild
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'master'), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: Master Build stage
+  jobs:  
+
+
+# ********** Deploy ステージ **********
+- stage: FeatureDeploy
+  displayName: Feature Deploy stage
   dependsOn: Build
 
   jobs:
