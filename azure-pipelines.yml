@@ -39,7 +39,7 @@ stages:
   displayName: A
   jobs:  
   - job: CommitTrigger
-    displayName: CommitTrigger
+    displayName: AA
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -55,7 +55,7 @@ stages:
   displayName: B
   jobs:  
   - job: CommitTrigger
-    displayName: CommitTrigger
+    displayName: BB
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -67,11 +67,11 @@ stages:
 
 # Master Commit または PR が成功したら動作するステージ
 - stage: MsterDeploy
-  condition: or(succeeded('A'), succeeded('B')) # A or B が成功したら実行する
+  condition: or(succeeded('A'), succeeded('B'))
   displayName: C
   jobs:  
   - job: CommitTrigger
-    displayName: CommitTrigger
+    displayName: CC
     pool:
       vmImage: $(vmImageName)
     steps:
