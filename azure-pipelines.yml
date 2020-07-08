@@ -33,20 +33,6 @@ variables:
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
-- stage: show
-  displayName: show
-  jobs:  
-  - job: show
-    displayName: show
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: Bash@3
-      inputs:
-        targetType: inline
-        script: |
-          echo $(Build.SourceBranch)
-
 # Commit をトリガーとする場合
 - stage: CommitTrigger
   condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
