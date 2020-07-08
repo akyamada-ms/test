@@ -33,6 +33,56 @@ variables:
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
+# Master commit をトリガーとする
+- stage: MasterCommit
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: CommitTrigger
+  jobs:  
+  - job: CommitTrigger
+    displayName: CommitTrigger
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+# Master PR をトリガーとする
+- stage: MasterPR
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'master'), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: CommitTrigger
+  jobs:  
+  - job: CommitTrigger
+    displayName: CommitTrigger
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+# Master Commit または PR が成功したら動作するステージ
+- stage: MsterDeploy
+  condition: and(eq(dependencies.MasterCommit.result,'SucceededWithIssues'), eq(dependencies.MasterPR.result,'SucceededWithIssues'))
+  displayName: CommitTrigger
+  jobs:  
+  - job: CommitTrigger
+    displayName: CommitTrigger
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+
+
 
 # Commit をトリガーとする場合
 - stage: CommitTrigger
