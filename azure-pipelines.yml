@@ -67,6 +67,9 @@ stages:
 
 # Master Commit または PR が成功したら動作するステージ
 - stage: MsterDeploy
+  dependsOn:
+  - A
+  - B
   condition: or(succeeded('A'), succeeded('B'))
   displayName: C
   jobs:  
