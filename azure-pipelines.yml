@@ -34,7 +34,7 @@ variables:
 
 stages:
 # Master commit をトリガーとする
-- stage: MasterCommit
+- stage: A
   condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
   displayName: A
   jobs:  
@@ -50,7 +50,7 @@ stages:
           echo "Master Commit trigger"
 
 # Master PR をトリガーとする
-- stage: MasterPR
+- stage: B
   condition: and(eq(variables['System.PullRequest.TargetBranch'], 'master'), eq(variables['Build.Reason'], 'PullRequest'))
   displayName: B
   jobs:  
@@ -67,9 +67,6 @@ stages:
 
 # Master Commit または PR が成功したら動作するステージ
 - stage: MsterDeploy
-  dependsOn:
-  - A
-  - B
   condition: or(succeeded('A'), succeeded('B'))
   displayName: C
   jobs:  
