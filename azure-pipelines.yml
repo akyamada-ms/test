@@ -1,4 +1,4 @@
-# test
+# test aaa
 trigger:
 - master
 
@@ -46,7 +46,6 @@ stages:
         targetType: inline
         script: |
           echo $(Build.SourceBranch)
-
 
 # Commit をトリガーとする場合
 - stage: CommitTrigger
