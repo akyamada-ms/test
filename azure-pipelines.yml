@@ -35,6 +35,9 @@ stages:
           sed -i -e "s|version: .*|version: v1.0 |g" manifests/deployment.yml
           sed -i -e "s|image: .*|image: ymdreg.azurecr.io/ymd:1.0|g" manifests/deployment.yml
           # cat manifests/deployment.yml
+    - checkout: self
+      persistCredentials: true
+      clean: true
     - task: PowerShell@2
       inputs:
         targetType: 'inline'
