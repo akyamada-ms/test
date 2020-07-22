@@ -30,6 +30,7 @@ stages:
     steps:
     - checkout: self
       persistCredentials: true
+      clean: true
     - task: Bash@3
       inputs:
         targetType: 'inline'
