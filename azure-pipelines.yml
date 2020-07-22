@@ -39,8 +39,8 @@ stages:
           sed -i -e "s|image: .*|image: ymdreg.azurecr.io/ymd:1.0|g" manifests/deployment.yml
           cat manifests/deployment.yml
           # git commit
-          git config --global user.name "John Doe"
-          git config --global user.email johndoe@example.com
+          #git config --global user.name "John Doe"
+          #git config --global user.email johndoe@example.com
           git add manifests/deployment.yml
           git commit -m "Add comment [skip ci]"
           git push origin refs/remotes/origin/master
