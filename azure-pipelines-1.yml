@@ -1,0 +1,178 @@
+# Deploy to Azure Kubernetes Service
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+  branches:
+    include:
+    - master
+    - hotfix/*
+    - release/*
+    - develop/*
+    - feature/*
+  paths:
+    exclude:
+    - manifests/*
+
+pr:
+  branches:
+    include:
+      - master
+      - release/*
+      - develop/*
+  paths:
+    exclude:
+    - manifests/*
+
+resources:
+- repo: self
+
+variables:
+
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '10be8273-0e36-43b9-ad70-ee71cbef8efd'
+  imageRepository: 'k8stest'
+  containerRegistry: 'ymdtestreg.azurecr.io'
+  dockerfilePath: '**/Dockerfile'
+  tag: '$(Build.BuildId)'
+  imagePullSecret: 'myregkey'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+  
+stages:
+
+# ********** トリガー条件 : コミット **********
+# トリガー条件 : Feature ブランチに対するコミットが発生
+- stage: FeatureBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/feature/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Featre Build stage
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+  - job: PublishArtifact
+    dependsOn: Build
+    displayName: PublishArtifact
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          sed -i -e "s|version: .*|version: v$(tag))|g" manifests/feature/deployment.yml
+          sed -i -e "s|image: .*|image: ***.azurecr.io/k8stest:$(tag)) |g" manifests/feature/deployment.yml
+          
+    - upload: manifests
+      artifact: manifests
+
+# トリガー条件 : develop ブランチに対するコミットが発生
+- stage: DevelopBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/develop/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Develop Build stage
+
+# トリガー条件 : release ブランチに対するコミットが発生
+- stage: ReleaseBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/release/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Release Build stage
+
+# トリガー条件 : hotfix ブランチに対するコミットが発生
+- stage: HotfixBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/hotfix/*'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Hotfix Build stage
+
+# トリガー条件 : master ブランチに対するコミットが発生
+- stage: MasterBuild
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: Master Build stage
+
+# ********** Deploy ステージ **********
+# feature deployment
+- stage: FeatureDeploy
+  displayName: Feature Deploy stage
+  condition: succeeded('FeatureBuild') # FeatureBuild ステージが成功
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'k8sFeature.default'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+              
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)manifests/feature/deployment.yml
+                $(Pipeline.Workspace)/manifests/feature/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+# develop deployment
+- stage: DevelopDeploy
+  displayName: Develop Deploy stage
+  condition: or(succeeded('DevelopBuild'), and(eq(variables['System.PullRequest.TargetBranch'], 'develop'), eq(variables['Build.Reason'], 'PullRequest'))) # DevelopBuild ステージが成功または develop ブランチに Pull Request が要求された時
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'k8sDev.default'
+
+# release deployment
+- stage: ReleaseDeploy
+  displayName: Release Deploy stage
+  condition: or(succeeded('ReleaseBuild'), and(eq(variables['System.PullRequest.TargetBranch'], 'release'), eq(variables['Build.Reason'], 'PullRequest')))
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'k8sRelease.default'
+
+# hotfix deployment
+- stage: HotfixDeploy
+  displayName: Hotfix Deploy stage
+  condition: succeeded('HotfixBuild')
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'k8sHotfix.default'
+
+# master deployment
+- stage: MasterDeploy
+  displayName: Master Deploy stage
+  condition: or(succeeded('MasterBuild'), and(eq(variables['System.PullRequest.TargetBranch'], 'master'), eq(variables['Build.Reason'], 'PullRequest')))
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'k8sMaster.default'
+  
