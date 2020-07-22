@@ -1,4 +1,4 @@
-# test aaaa ab
+# test aaaa aa
 trigger:
 - master
 
@@ -33,6 +33,56 @@ variables:
   isRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/release')]
 
 stages:
+# Master commit をトリガーとする
+- stage: A
+  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'))
+  displayName: A
+  jobs:  
+  - job: CommitTrigger
+    displayName: AA
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+# Master PR をトリガーとする
+- stage: B
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'master'), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: B
+  jobs:  
+  - job: CommitTrigger
+    displayName: BB
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+# Master Commit または PR が成功したら動作するステージ
+- stage: MsterDeploy
+  condition: or(succeeded('A'), succeeded('B'))
+  displayName: C
+  jobs:  
+  - job: CommitTrigger
+    displayName: CC
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: |
+          echo "Master Commit trigger"
+
+
+
 
 # Commit をトリガーとする場合
 - stage: CommitTrigger
