@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# test aaaaabbb
-=======
-# test aaaa aa
->>>>>>> 329d95c1df08752dec2d4d43d0687b6f1be01a17
+# test aaaa
 trigger:
 - master
 
