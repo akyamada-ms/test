@@ -1,4 +1,5 @@
 apiVersion : apps/v1beta1
+version: test
 kind: Deployment
 metadata:
   name: ymd 
