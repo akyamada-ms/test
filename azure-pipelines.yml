@@ -41,9 +41,9 @@ stages:
           # git commit
           git config --global user.name "John Doe"
           git config --global user.email johndoe@example.com
-          git add -A
+          git add manifests/deployment.yml
           git commit -m "Add comment [skip ci]"
-          git push origin master
+          git push origin
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
