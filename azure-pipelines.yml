@@ -41,7 +41,7 @@ stages:
         script: |
           git add -A
           git commit -m "Add comment [skip ci]"
-          git push origin
+          git push master
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
