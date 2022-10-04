@@ -4,6 +4,6 @@ pool: SelfHostedAgentPool
 
 steps:
 - script: |
-    git init
-    git add -A
-    git commit -m "test"
+    copy nul foo.txt
+    git add foo.txt
+    git commit -m "add null file"
