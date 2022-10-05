@@ -11,4 +11,3 @@ steps:
     git add foo.txt
     git commit -m "add null file"
     git log
-    git push origin HEAD
