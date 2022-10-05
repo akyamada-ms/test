@@ -11,3 +11,4 @@ steps:
     git add test.txt
     git commit -m "add test.txt file"
     git log -n 1
+    git push origin HEAD
