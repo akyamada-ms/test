@@ -10,3 +10,4 @@ steps:
     copy nul foo.txt
     git add foo.txt
     git commit -m "add null file"
+    git log
