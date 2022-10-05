@@ -7,8 +7,7 @@ pool: SelfHostedAgentPool
 
 steps:
 - script: |
-    copy nul foo.txt
-    git add foo.txt
-    git commit -m "add null file"
-    git log
-    git push origin HEAD
+    copy nul test.txt
+    git add test.txt
+    git commit -m "add test.txt file"
+    git log -n 1
