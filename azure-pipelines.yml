@@ -6,9 +6,4 @@ resources:
 pool: SelfHostedAgentPool
 
 steps:
-- script: |
-    copy nul test.txt
-    git add test.txt
-    git commit -m "add test.txt file"
-    git log -n 1
-    git push origin HEAD
+- script: echo "test"
